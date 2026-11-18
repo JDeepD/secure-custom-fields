@@ -35,6 +35,7 @@ jest.mock( '@wordpress/block-editor', () => ( {
 
 jest.mock( '@wordpress/components', () => ( {
 	ComboboxControl: 'ComboboxControl',
+	PanelBody: 'PanelBody',
 	__experimentalToolsPanel: 'ToolsPanel',
 	__experimentalToolsPanelItem: 'ToolsPanelItem',
 } ) );
@@ -52,6 +53,7 @@ jest.mock( '../../../assets/src/js/bindings/utils', () => ( {
 	getFilteredFieldOptions: jest.fn( () => [] ),
 	canUseUnifiedBinding: jest.fn( () => false ),
 	fieldsToOptions: jest.fn( () => [] ),
+	hasFieldGroupsOnScreen: jest.fn( () => false ),
 } ) );
 
 jest.mock( '../../../assets/src/js/bindings/hooks', () => ( {

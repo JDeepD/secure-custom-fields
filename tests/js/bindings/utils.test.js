@@ -10,6 +10,7 @@ import {
 	extractPostTypeFromTemplate,
 	formatFieldGroupsData,
 	fieldsToOptions,
+	hasFieldGroupsOnScreen,
 } from '../../../assets/src/js/bindings/utils';
 
 describe( 'Block Bindings Utils', () => {
@@ -330,6 +331,44 @@ describe( 'Block Bindings Utils', () => {
 			expect( result ).toEqual( [
 				{ value: 'field1', label: 'Field 1', type: 'text' },
 			] );
+		} );
+
+		it( 'should skip fields that are not allowed in bindings', () => {
+			const result = fieldsToOptions( {
+				field1: {
+					label: 'Field 1',
+					type: 'text',
+					allow_in_bindings: true,
+				},
+				field2: {
+					label: 'Field 2',
+					type: 'text',
+					allow_in_bindings: false,
+				},
+			} );
+			expect( result ).toEqual( [
+				{ value: 'field1', label: 'Field 1', type: 'text' },
+			] );
+		} );
+	} );
+
+	describe( 'hasFieldGroupsOnScreen', () => {
+		afterEach( () => {
+			delete global.acf;
+		} );
+
+		it( 'should return true when SCF localized field group postboxes', () => {
+			global.acf = { get: () => [ { key: 'group_1' } ] };
+			expect( hasFieldGroupsOnScreen() ).toBe( true );
+		} );
+
+		it( 'should return false without postboxes', () => {
+			global.acf = { get: () => undefined };
+			expect( hasFieldGroupsOnScreen() ).toBe( false );
+		} );
+
+		it( 'should return false without the acf global', () => {
+			expect( hasFieldGroupsOnScreen() ).toBe( false );
 		} );
 	} );
 } );

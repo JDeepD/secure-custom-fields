@@ -167,11 +167,24 @@ export function fieldsToOptions( fieldsMap ) {
 		return [];
 	}
 
-	return Object.entries( fieldsMap ).map(
-		( [ fieldName, fieldConfig ] ) => ( {
+	return Object.entries( fieldsMap )
+		.filter(
+			( [ , fieldConfig ] ) => false !== fieldConfig.allow_in_bindings
+		)
+		.map( ( [ fieldName, fieldConfig ] ) => ( {
 			value: fieldName,
 			label: fieldConfig.label,
 			type: fieldConfig.type,
-		} )
-	);
+		} ) );
+}
+
+/**
+ * Checks whether SCF field groups are shown on the current edit screen.
+ *
+ * @since 6.9.11
+ * @return {boolean} True if the screen has SCF field groups.
+ */
+export function hasFieldGroupsOnScreen() {
+	const postboxes = window.acf?.get?.( 'postboxes' );
+	return Array.isArray( postboxes ) && postboxes.length > 0;
 }

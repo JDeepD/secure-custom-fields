@@ -10,6 +10,7 @@ import {
 } from '@wordpress/block-editor';
 import {
 	ComboboxControl,
+	PanelBody,
 	__experimentalToolsPanel as ToolsPanel,
 	__experimentalToolsPanelItem as ToolsPanelItem,
 } from '@wordpress/components';
@@ -24,6 +25,7 @@ import {
 	getFilteredFieldOptions,
 	canUseUnifiedBinding,
 	fieldsToOptions,
+	hasFieldGroupsOnScreen,
 } from './utils';
 import {
 	useSiteEditorContext,
@@ -134,16 +136,52 @@ const withCustomControls = createHigherOrderComponent( ( BlockEdit ) => {
 			if ( isSiteEditor ) {
 				return bindableAttributes && bindableAttributes.length > 0;
 			}
-			// In post editor, only show if we have fields available
+			// In post editor, only show if we have fields or field groups
 			return (
-				allFieldOptions.length > 0 &&
+				( allFieldOptions.length > 0 || hasFieldGroupsOnScreen() ) &&
 				bindableAttributes &&
 				bindableAttributes.length > 0
 			);
 		}, [ isSiteEditor, allFieldOptions, bindableAttributes ] );
 
+		const hasCompatibleFields = useMemo(
+			() =>
+				isSiteEditor ||
+				( bindableAttributes || [] ).some(
+					( attribute ) =>
+						getAttributeFieldOptions( attribute ).length > 0
+				),
+			[ isSiteEditor, bindableAttributes, getAttributeFieldOptions ]
+		);
+
 		if ( ! shouldShowPanel ) {
 			return <BlockEdit { ...props } />;
+		}
+
+		if (
+			! hasCompatibleFields &&
+			! Object.values( boundFields ).some( Boolean )
+		) {
+			return (
+				<>
+					<InspectorControls { ...props }>
+						<PanelBody
+							title={ __(
+								'Connect to a field',
+								'secure-custom-fields'
+							) }
+						>
+							<p>
+								{ __(
+									'No compatible fields. A field needs "Show in REST API" on its field group, "Allow Access to Value in Editor UI" turned on, and a field type this block supports.',
+									'secure-custom-fields'
+								) }
+							</p>
+						</PanelBody>
+					</InspectorControls>
+					<BlockEdit { ...props } />
+				</>
+			);
 		}
 
 		return (

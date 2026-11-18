@@ -524,6 +524,49 @@ class Test_ACF_Rest_Api extends BaseTestCase {
 	}
 
 	/**
+	 * The `{field}_source` entry says whether the field can be used in block bindings.
+	 */
+	public function test_load_fields_source_includes_allow_in_bindings() {
+		acf_add_local_field_group(
+			array_merge(
+				$this->test_field_group,
+				array(
+					'key'    => 'group_test_rest_bindings',
+					'fields' => array(
+						array(
+							'key'               => 'field_test_rest_bindings_on',
+							'label'             => 'Bindings On',
+							'name'              => 'test_rest_bindings_on',
+							'type'              => 'text',
+							'allow_in_bindings' => 1,
+						),
+						array(
+							'key'               => 'field_test_rest_bindings_off',
+							'label'             => 'Bindings Off',
+							'name'              => 'test_rest_bindings_off',
+							'type'              => 'text',
+							'allow_in_bindings' => 0,
+						),
+					),
+				)
+			)
+		);
+
+		$request_prop = $this->reflection->getProperty( 'request' );
+		$request_prop->setAccessible( true );
+		$request_prop->setValue( $this->rest_api, $this->get_mock_post_request() );
+
+		$result = $this->rest_api->load_fields( array( 'id' => $this->test_post_id ), 'acf', new WP_REST_Request(), 'post' );
+
+		acf_remove_local_field_group( 'group_test_rest_bindings' );
+		acf_remove_local_field( 'field_test_rest_bindings_on' );
+		acf_remove_local_field( 'field_test_rest_bindings_off' );
+
+		$this->assertTrue( $result['test_rest_bindings_on_source']['allow_in_bindings'] );
+		$this->assertFalse( $result['test_rest_bindings_off_source']['allow_in_bindings'] );
+	}
+
+	/**
 	 * Test load_fields uses REST-safe formatted values for User fields.
 	 */
 	public function test_load_fields_uses_rest_safe_user_formatted_values() {
